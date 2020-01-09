@@ -1,0 +1,203 @@
+------------------------------------------------------------------------------
+                                    libisofs
+------------------------------------------------------------------------------
+
+Released under GPL (see COPYING file for details).
+
+Copyright (C) 2008 - 2010 Vreixo Formoso, Mario Danic, Thomas Schmitt
+
+libisofs is part of the libburnia project (libburnia-project.org)
+------------------------------------------------------------------------------
+
+                        Download, Build and Installation
+
+libisofs code is mantained in a Bazaar repository at Launchpad 
+(https://launchpad.net/libisofs/). You can download it with:
+
+$ bzr branch lp:libisofs
+
+Our build system is based on autotools. For preparing the build you will need 
+autotools of at least version 1.7. If you have download the code from the
+repository, first of all you need to execute
+
+   ./autogen.sh
+   
+on toplevel dir to execute autotools.
+
+Alternatively you may unpack a release tarball for which you do not need
+autotools installed.
+
+To build libisofs it should be sufficient to go into its toplevel directory 
+and execute
+
+   ./configure --prefix=/usr
+   make
+
+To make the libraries accessible for running resp. developing applications 
+   make install
+
+See INSTALL file for further details.
+
+
+------------------------------------------------------------------------------
+
+libisofs is a library to create an ISO-9660 filesystem, supports extensions
+like RockRidge or Joliet, and introduces an own extension AAIP.
+It is a full featured ISO-9660 editor which composes and changes the directory
+tree of an ISO image. This tree and its newly imported data file contents get
+then written as independent single-session image or as add-on session for the
+image from where the tree was originally loaded.
+
+Features:
+---------
+
+- Image creation
+	- Creates ISO-9660 images from local files.
+	- Support for RockRidge and Joliet extensions.
+	- Support for ISO-9660:1999 (version 2).
+	- Support for El-Torito bootable images. Tested are: PC-BIOS and EFI.
+	- Support for multi-extent data files up to 400 GB (level 3).
+	- Full-featured edition of the image files, including: addition of new
+	  files, removing of existent files, moving files, renaming files,
+	  change file attributes (permissions, timestamps...)
+	- Optional recording per file of non-ISO 9660 features:
+	  ACL, xattr, content MD5, hard link relations.
+	  They do not hamper image readability by operating systems but can be
+	  retrieved only via libisofs.
+	- Optional zisofs compression, gzip compression, external filter
+	  processes.
+	- Several options to relax ISO-9660 constraints.
+	- Special options for images intended for distribution (suitable
+	  default modes for files, hiding of real timestamps...).
+- Image reading
+	- Image tree and data heap can be verified by stream reading and
+	  eventually recorded MD5 tags.
+	- Directory tree and file attributes of ISO 9660 session get loaded
+	  into memory for editing or for extraction into local filesystem.
+	- File content can be read by applications.
+	- Automatic zisofs decompression.
+	- Optional application of gzip decompression or external filter
+	  processes.
+	- Eventually recorded MD5 of data file can be obtained, MD5 of data
+	  stream can be computed and compared.
+	- Helper functions for restoring ACL and/or xattr to the local
+	  filesystem.
+- Multisession
+	- Support for growing an existing image on multi-session media.
+	- Support for "emulated multisession" on overwriteable media such as
+	  DVD+RW, USB sticks, regular files.
+	- Support for blindly prepared add-on sessions (mkisofs style -M -C)
+	  suitable for pipes which lead to an external burn program.
+- Image modification
+	- Creates a completely new image from files out of another image and
+	  eventual editing operations. Suitable for any target medium.
+- Others
+	- Handling of different input and output charset.
+	- Good integration with libburn for image burning.
+	- Reliable, good handling of different kind of errors.
+
+Requirements:
+-------------
+
+- iconv() functions for character set conversion must be available.
+  Either implicitely as in Linux or by a separate library like libiconv
+  on FreeBSD.
+  
+Know bugs:
+----------
+
+Multisession and image growing can lead to undesired results in several cases:
+
+a) Images with unsupported features, such as:
+	- UDF.
+	- HSF/HFS+ or other Mac extensions.
+	- ECMA-119 Extended attributes.
+	- Non El-Torito boot info.
+	- ...
+   In all these cases, the resulting new image (or new session) could lack some
+   features of the original image. Nevertheless, the ECMA-119 System Area with
+   an eventual Master Boot Record gets preserved by default.
+   In some cases libisofs will issue warning messages, or even refuse to grow
+   or modify the image. Others remain undetected. Images created with libisofs
+   do not have this problems.
+
+b) Bootable El-Torito images may have several problems, that result in a new
+   image that is not bootable, or that boots from an outdated session. In many
+   cases it is recommended to add boot info again in the new session.
+   
+    - isolinux images won't be bootable after a modify. This is because 
+      isolinux images need to have hardcoded the root dir lba in their boot
+      information table.
+      libisofs makes an educated guess at load time whether a boot image
+      contains such a table. Its outcome can be inquired by call
+      el_torito_seems_boot_info_table().
+      If one knows to have isolinux or GRUB El-Totito-bootable images, or if
+      a boot information table seems to exist, it is advised to apply the
+      el_torito_patch_isolinux_image() function.
+      Most boot images are highly dependent of the image contents, so if the 
+      user moves or removes some files on image it is possible they won't boot 
+      anymore.
+    - There is no safe way to modify hidden boot images, as the size of the 
+      boot image can't be figured out.
+
+c) Generated images could have different ECMA-119 low level names, due to 
+   different way to mangle names, to new files added that force old files to 
+   be renamed, to different relaxed contraints... This only affect the 
+   ISO-9660 info, not the RR names, so it shouldn't be a problem in most
+   cases. If your app. relies on low level ISO-9660 names, you will need to 
+   ensure all node names are valid ISO names (maybe together with some
+   relaxed contraints), otherwise libisofs might arbitrarily change the names.
+
+
+------------------------------------------------------------------------------
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License version 2 or later
+    as published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+------------------------------------------------------------------------------
+Clarification in my name and in the name of Mario Danic, upcoming copyright
+holders on toplevel of libburnia. To be fully in effect after the remaining
+other copyrighted code has been replaced by ours and by copyright-free
+contributions of our friends.
+
+Note:
+In the particular case of libisofs there is no foreign copyright involved.
+As of 2010 foreign copyright is only in component libburn.
+------------------------------------------------------------------------------
+
+We will not raise any legal protest to dynamic linking of our libraries
+with applications that are not under GPL, as long as they fulfill
+the condition of offering the library source code used, whether
+altered or unaltered, under the GPLv2+, along with the application.
+Nevertheless, the safest legal position is not to link libburn with
+non-GPL compatible programs.
+
+We ask you politely to use our work in open source spirit
+and with the due reference to the entire open source community.
+
+If there should really arise the case where above clarification
+does not suffice to fulfill a clear and neat request in open source
+spirit that would otherwise be declined for mere formal reasons,
+only in that case we will duely consider to issue a special license
+covering only that special case.
+It is the open source idea of responsible freedom which will be
+decisive and you will have to prove that you exhausted all own
+means to qualify for GPL.
+
+We are firmly committed to allow GPLv2+ now and with future releases.
+
+Signed: Mario Danic, Thomas Schmitt
+Agreement joined later by: Vreixo Formoso
+
+Public contact: <libburn-hackers@pykix.org>
+
