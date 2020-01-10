@@ -1,7 +1,7 @@
 Summary:	Library to create ISO 9660 disk images
 Name:		libisofs
 Version:	1.2.8
-Release:	2%{?dist}
+Release:	4%{?dist}
 # make_isohybrid_mbr.c is under LGPLv2+, the rest under GPLv2+
 License:	GPLv2+ and LGPLv2+
 Group:		System Environment/Libraries
@@ -67,6 +67,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/%{name}*.pc
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.2.8-4
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.2.8-3
+- Mass rebuild 2013-12-27
+
 * Fri Jun 21 2013 Matthias Clasen <mclasen@redhat.com> - 1.2.8-2
 - Don't ship api docs twice (they were included in both
   the main and the devel package, by accident (need to save
